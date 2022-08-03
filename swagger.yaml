@@ -117,7 +117,7 @@ paths:
     get:
       tags:
       - container
-      summary: Create a new container
+      summary: Get info about container
       operationId: getContainerInfo
       parameters:
         - in: path
