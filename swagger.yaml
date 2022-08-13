@@ -747,6 +747,59 @@ paths:
                     type: string
       security:
       - basicAuth: []
+  /container/{containerID}/vscode/password:
+    get:
+      tags:
+      - container
+      summary: Get the password of the vscode server installed on the container
+      operationId: getContainerVScodePassword
+      parameters:
+        - in: path
+          name: containerID
+          schema:
+            type: number
+          required: true
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: ok
+                  password:
+                    type: string
+                    example: test-pass
+        404:
+          description: Could not find container with such an ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IDNotFound'
+        406:
+          description: Unmanaged by our service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotManagedByUS'
+        409:
+          description: Could not get vscode password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: conflict
+                  message:
+                    type: string
+                    default: could not get password from agent
+      security:
+      - basicAuth: []
 
 
   /config/locations:
