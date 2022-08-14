@@ -845,7 +845,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/NotConnectedToDaemon'
         500:
-          description: a
+          description: Could not create ticket
           content:
             application/json:
               schema:
