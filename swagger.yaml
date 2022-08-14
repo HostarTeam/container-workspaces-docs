@@ -915,7 +915,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SQLNode'
+                  $ref: '#/components/schemas/Node'
       security:
       - basicAuth: []
   /config/nodes/add:
@@ -929,7 +929,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SQLNode'
+              $ref: '#/components/schemas/Node'
       responses:
         201:
           description: created
@@ -1020,7 +1020,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SQLIP'
+                  $ref: '#/components/schemas/IP'
       security:
       - basicAuth: []
   /config/ips/add:
@@ -1034,7 +1034,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SQLIP'
+              $ref: '#/components/schemas/IP'
       responses:
         201:
           description: created
@@ -1374,7 +1374,7 @@ components:
         type:
           type: string
           enum: [lxc]
-    SQLNode:
+    Node:
       type: object
       properties:
         id:
@@ -1392,7 +1392,7 @@ components:
         location:
           type: string
           example: IL
-    SQLIP:
+    IP:
       type: object
       properties:
         id:
