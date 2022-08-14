@@ -800,6 +800,68 @@ paths:
                     default: could not get password from agent
       security:
       - basicAuth: []
+  /container/{containerID}/ticket:
+    post:
+      tags:
+      - container
+      summary: Get the ticket to the webshell of an container
+      operationId: getTicketOfContainer
+      parameters:
+        - in: path
+          name: containerID
+          schema:
+            type: number
+          required: true
+      responses:
+        201:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: ok
+                  ticket:
+                    type: string
+                    example: test-pass
+        404:
+          description: Could not find container with such an ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IDNotFound'
+        406:
+          description: Unmanaged by our service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotManagedByUS'
+        409:
+          description: Could not get vscode password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotConnectedToDaemon'
+        500:
+          description: a
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: error
+                  message:
+                    type: string
+                    default: Could not create ticket
+                  error:
+                    type: string
+                    default: Unkown error
+      security:
+      - basicAuth: []
 
 
   /config/locations:
@@ -1381,6 +1443,15 @@ components:
         message:
           type: string
           example: Specified ID belongs to a container which is not managed by our services
+    NotConnectedToDaemon:
+      type: object
+      properties:
+        status:
+          type: string
+          default: conflict
+        message:
+          type: string
+          default: Container with given ID is not connected to this server
     IDNotFound:
       type: object
       properties:
