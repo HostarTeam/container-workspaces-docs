@@ -8,7 +8,7 @@ externalDocs:
   description: github repo
   url: https://github.com/HostarTeam/container-workspaces
 servers:
-- url: https://stg.cw.hostar.one:8080/api
+- url: https://cw.dev.cwpanel.net:8080/api
 tags:
 - name: container
   description: Manage and get information about containers here
