@@ -878,8 +878,52 @@ paths:
               schema:
                 type: array
                 items:
+                  $ref: '#/components/schemas/Location'
+      security:
+      - basicAuth: []
+    post:
+      tags:
+      - config
+      summary: Create a location
+      operationId: createLocation
+      requestBody:
+        description: Location body
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                location:
                   type: string
                   example: IL
+        required: true
+      responses:
+        201:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  status:
+                    type: string
+                    default: created
+                  description:
+                    type: string
+                    default: Location added successfully
+        409:
+          description: conflict (location already exists)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: conflict
+                  description:
+                    type: string
+                    default: Location already exists in the database
       security:
       - basicAuth: []
   /config/locations/available:
@@ -887,7 +931,7 @@ paths:
       tags:
       - config
       summary: Get all available locations of all nodes
-      description: Get all available that you can create container on
+      description: Get all available that you can create containers on
       operationId: getAvailableLocations
       responses:
         200:
@@ -897,8 +941,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: string
-                  example: IL
+                  $ref: '#/components/schemas/Location'
       security:
       - basicAuth: []
   /config/nodes:
@@ -1390,8 +1433,7 @@ components:
           type: string
           example: 1.1.1.1
         location:
-          type: string
-          example: IL
+          $ref: '#/components/schemas/Location/properties/id'
     IP:
       type: object
       properties:
@@ -1488,3 +1530,12 @@ components:
           type: string
           example: tar.zst
           description: The format of the backup
+    Location:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+        location:
+          type: string
+          example: IL
