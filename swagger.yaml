@@ -14,6 +14,8 @@ tags:
   description: Manage and get information about containers here
 - name: config
   description: Access to the configuration
+- name: pm
+  description: Manage access to container's services
 paths:
   /container:
     get:
@@ -532,7 +534,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/NotManagedByUS'
         409:
-          description: Could not find logs
+          description: Couldn't change password
           content:
             application/json:
               schema:
@@ -994,7 +996,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MissingProp'
         409:
-          description: Could not find logs
+          description: Node already exists in the database
           content:
             application/json:
               schema:
@@ -1099,7 +1101,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MissingProp'
         409:
-          description: Could not find logs
+          description: IP already exists
           content:
             application/json:
               schema:
@@ -1158,7 +1160,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MissingProp'
         409:
-          description: Could not find logs
+          description: All IPs exist
           content:
             application/json:
               schema:
@@ -1289,6 +1291,86 @@ paths:
       security:
       - basicAuth: []
 
+
+  /pm/addcontaineraccess:
+    post:
+      tags:
+      - pm
+      summary: Get a token to access a container's service
+      operationId: addContainerAccess
+      requestBody:
+        description: Container access details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContainerAccess'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: ok
+                  token:
+                    type: string
+                    example: 5yVkjnTN3GNbqV8XLjJ9HMpvgVAIwVKhSFHDTKVGPPJ7XXhnMAsCIqBtAn9I
+        400:
+          description: Somethign is missing in the body or service doesn't exist or service body is wrong
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/MissingProp'
+                - type: object
+                  properties:
+                    status:
+                      type: string
+                      default: error
+                    message:
+                      type: string
+                      example: [service must be an existing service, service must be a valid string, Invalid container ID]
+      security:
+      - basicAuth: []      
+  /pm/removecontaineracess:
+    post:
+      tags:
+      - pm
+      summary: Remove container access
+      operationId: removeContainerAccess
+      requestBody:
+        description: Container access details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: 5yVkjnTN3GNbqV8XLjJ9HMpvgVAIwVKhSFHDTKVGPPJ7XXhnMAsCIqBtAn9I
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: ok
+        400:
+          description: Somethign is missing in the body or service doesn't exist or service body is wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissingProp'
+      security:
+      - basicAuth: []      
+  
 components:
   securitySchemes:
     basicAuth:
@@ -1539,3 +1621,12 @@ components:
         location:
           type: string
           example: IL
+    ContainerAccess:
+      type: object
+      properties:
+        containerID:
+          type: number
+          example: 120
+        service:
+          type: string
+          enum: [vscode]
