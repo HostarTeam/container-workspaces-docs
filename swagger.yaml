@@ -47,8 +47,9 @@ paths:
               type: object
               properties:
                 location:
-                  type: string
-                  example: IL-1
+                  type: number
+                  example: 1
+                  description: the ID of the location that you want to create the container on
                 template:
                   type: string
                   example: ubuntu-20.04.tar.xz
