@@ -100,23 +100,6 @@ paths:
       security:
       - basicAuth: []
       x-codegen-request-body-name: body
-  /container/status:
-    get:
-      tags:
-      - container
-      summary: Get the status of all the containers
-      operationId: getAllContainersStatus
-      responses:
-        200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ContainerStatus'
-      security:
-      - basicAuth: []
   /container/{containerID}:
     get:
       tags:
@@ -196,39 +179,6 @@ paths:
                   error:
                     type: string
                     format: error
-      security:
-      - basicAuth: []
-  /container/{containerID}/status:
-    get:
-      tags:
-      - container
-      summary: Get the container status object
-      operationId: getContainerStatus
-      parameters:
-        - in: path
-          name: containerID
-          schema:
-            type: number
-          required: true
-      responses:
-        200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ContainerStatus'
-        404:
-          description: Could not find container with such an ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IDNotFound'
-        406:
-          description: Unmanaged by our service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotManagedByUS'
       security:
       - basicAuth: []
   /container/{containerID}/start:
@@ -431,6 +381,77 @@ paths:
                     example: could not reboot container
       security:
       - basicAuth: []
+  /container/{containerID}/exec:
+    post:
+      tags:
+      - container
+      summary: Execute commands on a container without getting back the response
+      operationId: execOnContainer
+      parameters:
+        - in: path
+          name: containerID
+          schema:
+            type: number
+          required: true
+      requestBody:
+        description: The commands to execute
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commands:
+                  type: array
+                  description: The commands to execute on the container
+                  items:
+                    example: 'ping 1.1.1.1 -c 1'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        404:
+          description: Could not find container with such an ID or the container isn't connected to the server
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/IDNotFound'
+                - type: object
+                  properties: 
+                    status:
+                      type: string
+                      default: not found
+                    message:
+                      type: string
+                      example: could not find client with the given ip address
+        406:
+          description: Unmanaged by our service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotManagedByUS'
+        409:
+          description: Could not reboot container
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: conflict
+                  message:
+                    type: string
+                    default: could not reboot container
+      security:
+      - basicAuth: []      
   /container/{containerID}/logs:
     get:
       tags:
@@ -749,121 +770,6 @@ paths:
                     default: error
                   message:
                     type: string
-      security:
-      - basicAuth: []
-  /container/{containerID}/vscode/password:
-    get:
-      tags:
-      - container
-      summary: Get the password of the vscode server installed on the container
-      operationId: getContainerVScodePassword
-      parameters:
-        - in: path
-          name: containerID
-          schema:
-            type: number
-          required: true
-      responses:
-        200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    default: ok
-                  password:
-                    type: string
-                    example: test-pass
-        404:
-          description: Could not find container with such an ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IDNotFound'
-        406:
-          description: Unmanaged by our service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotManagedByUS'
-        409:
-          description: Could not get vscode password
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    default: conflict
-                  message:
-                    type: string
-                    default: could not get password from agent
-      security:
-      - basicAuth: []
-  /container/{containerID}/ticket:
-    post:
-      tags:
-      - container
-      summary: Get the ticket to the webshell of an container
-      operationId: getTicketOfContainer
-      parameters:
-        - in: path
-          name: containerID
-          schema:
-            type: number
-          required: true
-      responses:
-        201:
-          description: ok
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    default: ok
-                  ticket:
-                    type: string
-                    example: test-pass
-        404:
-          description: Could not find container with such an ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IDNotFound'
-        406:
-          description: Unmanaged by our service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotManagedByUS'
-        409:
-          description: Could not get vscode password
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotConnectedToDaemon'
-        500:
-          description: Could not create ticket
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    default: error
-                  message:
-                    type: string
-                    default: Could not create ticket
-                  error:
-                    type: string
-                    default: Unkown error
       security:
       - basicAuth: []
 
@@ -1382,51 +1288,22 @@ components:
     Container:
       type: object
       properties:
-        hostname: 
+        ip:
           type: string
-          example: container-workspaces
-        arch:
-          type: string
-          enum: [amd64, i386, arm64, armhf]
-        ostype:
-          type: string
-          enum: [ubuntu, centos, debian, fedora, devuan, opensuse, archlinux, alpine, gentoo, unmanaged]
-        rootfs:
-          type: string
-          example: local-lvm:vm-120-disk-0,size=8G
-        memory:
-          type: number
-          description: The ram in MB
-          example: 1024
-        nameserver:
-          type: string
+          description: The IP address of the container
           example: 1.1.1.1
-        net0:
-          type: string
-          example: name=eth0,bridge=vmbr0,firewall=1,gw=195.133.95.1,hwaddr=E6:90:71:5E:B3:F6,ip=195.133.95.123/24,type=veth
-          description: The network interface details
-        swap: 
-          type: number
-          example: 512
-          description: The Swap memory in MB
-        cores:
-          type: number
-          example: 1
-          description: The cpu cores count
-        digest:
-          type: string
-          example: 77553ba18c63845a0879b95321bc05a1c4951fef
-          description: SHA1 digest of configuration file. This can be used to prevent concurrent modifications.
-        unprivileged:
+        ready:
           type: boolean
+          description: Indicates if the container is ready for usage or not
           example: true
-    ContainerStatus:
-      type: object
-      properties:
         vmid:
           type: number
           description: The containerID
           example: 120
+        template:
+          type: number
+          description: Indicates if the container is a template or not, 0 if not and 1 otherwise
+          example: 0
         cpus:
           type: number
           description: The cores count
@@ -1448,14 +1325,6 @@ components:
           type: number
           description: The disk write in bytes
           example: 0
-        swap:
-          type: number
-          description: The used swap size in bytes
-          example: 0
-        maxswap:
-          type: number
-          description: The max swap size in bytes
-          example: 536870912
         status: 
           type: string
           description: The current status of the cotainer
@@ -1468,14 +1337,6 @@ components:
           type: number
           description: The max ram size in bytes
           example: 1073741824
-        ha:
-          type: object
-          description: HA manager service status
-          properties:
-            managed:
-              type: boolean
-              example: false
-              description: Is the HA manager turned on
         disk: 
           type: number
           description: The used disk spaces in bytes
@@ -1491,9 +1352,6 @@ components:
         netout:
           type: number
           description: The network traffic that the container sent in bytes
-        pid:
-          type: number
-          example: 2188432
         name:
           type: string
           description: The hostname of the container
@@ -1501,6 +1359,10 @@ components:
         type:
           type: string
           enum: [lxc]
+        node:
+          type: string
+          description: The name of the container's node
+          example: pve
     Node:
       type: object
       properties:
