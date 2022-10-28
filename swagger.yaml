@@ -1493,4 +1493,4 @@ components:
           example: 120
         service:
           type: string
-          enum: [vscode]
+          enum: [vscode, webshell]
